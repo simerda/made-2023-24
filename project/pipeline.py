@@ -1,8 +1,17 @@
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
-from sqlalchemy import create_engine
-from sqlalchemy.types import *
+from sqlalchemy import (
+    create_engine,
+    Table,
+    Column,
+    Integer,
+    String,
+    Numeric,
+    MetaData,
+    Engine,
+)
+from data_manipulators import PipelineBuilder
 
 import pandas as pd
 
@@ -15,113 +24,134 @@ DB_FILE = "../data/db.sqlite"
 
 
 def main():
-    df_building_permits = read_zip_dataset(URL_BUILDING_PERMITS_DS, "DBData.csv")
-    df_building_permits.drop("Unnamed: 21", axis=1, inplace=True)
-    years = [str(year) for year in range(2004, 2021)]
+    engine = create_engine("sqlite:///" + DB_FILE, echo=False)
+    building_permits_pipeline(engine)
+    housing_prices_pipeline(engine)
 
-    column_mapping = {
+
+def building_permits_pipeline(engine: Engine):
+    years = [str(y) for y in range(2004, 2021)]
+    permit_mapping = {
         "Country Code": "country_code",
         "Country Name": "country_name",
         "Indicator Name": "indicator_name",
         "Indicator Code": "indicator_code",
     }
-    df_building_permits.rename(columns=column_mapping, inplace=True)
+    columns = [*permit_mapping.keys(), *years]
 
-    # extract indicator names
-    df_indicators = df_building_permits[["indicator_code", "indicator_name"]].copy()
-    df_indicators.drop_duplicates(inplace=True, ignore_index=True)
-    df_indicators.rename(
-        columns={"indicator_code": "code", "indicator_name": "name"}, inplace=True
+    permits_builder = PipelineBuilder(
+        read_zip_dataset(URL_BUILDING_PERMITS_DS, "DBData.csv")
+    )
+    permits_builder.whitelist_cols(columns).rename_cols(permit_mapping)
+
+    indicators_mapping = {
+        "indicator_code": "code",
+        "indicator_name": "name",
+    }
+    indicators_builder = (
+        permits_builder.copy()
+        .whitelist_cols(list(indicators_mapping.keys()))
+        .drop_duplicates()
+        .rename_cols(indicators_mapping)
     )
 
-    # extract countries and codes
-    df_countries = df_building_permits[["country_code", "country_name"]].copy()
-    df_countries.drop_duplicates(inplace=True, ignore_index=True)
-    df_countries.rename(
-        columns={"country_code": "code", "country_name": "name"}, inplace=True
+    countries_mapping = {
+        "country_code": "code",
+        "country_name": "name",
+    }
+
+    countries_builder = (
+        permits_builder.copy()
+        .whitelist_cols(list(countries_mapping.keys()))
+        .drop_duplicates()
+        .rename_cols(countries_mapping)
     )
 
-    # doing business DS
-    df_building_permits.drop(["country_name", "indicator_name"], axis=1, inplace=True)
-
-    df_housing_prices = read_zip_dataset(URL_HOUSING_PRICES_DS, "HOUSE_PRICES-en.csv")
-    df_housing_prices.drop(
-        ["Flag Codes", "PowerCode Code", "Reference Period Code"], axis=1, inplace=True
+    indicators_schema = Table(
+        "indicators",
+        MetaData(),
+        Column("code", String(50), primary_key=True),
+        Column("name", String(200), nullable=True),
     )
 
+    countries_schema = Table(
+        "countries",
+        MetaData(),
+        Column("code", String(7), primary_key=True),
+        Column("name", String(50), nullable=False),
+    )
+
+    permits_schema = Table(
+        "building_permits",
+        MetaData(),
+        Column("id", Integer, primary_key=True, autoincrement=True),
+        Column("country_code", String(7), nullable=False),
+        Column("indicator_code", String(50), nullable=False),
+        Column("year", Integer, nullable=False),
+        Column("value", Numeric, nullable=False),
+    )
+
+    # import indicators
+    indicators_builder.to_sqlite(indicators_schema, engine)
+
+    # import countries
+    countries_builder.to_sqlite(countries_schema, engine)
+
+    # import building permit data by years
+    permits_builder.drop_cols(["country_name", "indicator_name"])
+    for year in years:
+        other_years = years.copy()
+        other_years.remove(year)
+
+        (
+            permits_builder.copy()
+            .drop_cols(other_years)
+            .rename_cols({year: "value"})
+            .drop_empty()
+            .set_constant("year", year)
+            .to_sqlite(permits_schema, engine, year == years[0])
+        )
+
+
+def housing_prices_pipeline(engine: Engine):
+    builder = PipelineBuilder(
+        read_zip_dataset(URL_HOUSING_PRICES_DS, "HOUSE_PRICES-en.csv")
+    )
     column_mapping = {
         "COU": "country_code",
         "IND": "indicator_code",
         "TIME": "year_quarter",
         "Value": "value",
     }
-    df_housing_prices.rename(columns=column_mapping, inplace=True)
 
-    engine = create_engine("sqlite:///" + DB_FILE, echo=False)
-    sqlite_connection = engine.connect()
-
-    # define schemas
-    countries_schema = {
-        "id": Integer,
-        "code": String(7),
-        "name": String(50),
-    }
-    indicators_schema = {
-        "id": Integer,
-        "code": String(50),
-        "name": String(200),
-    }
-    permits_schema = {
-        "id": Integer,
-        "country_code": String(7),
-        "indicator_code": String(50),
-        "value": DECIMAL,
-        "year": Integer,
-    }
-    housing_schema = {
-        "id": Integer,
-        "country_code": String(7),
-        "indicator_code": String(20),
-        "year_quarter": String(7),
-        "value": DECIMAL,
-    }
-
-    # begin importing
-    df_countries.to_sql(
-        "countries", sqlite_connection, if_exists="replace", dtype=countries_schema
-    )
-    df_indicators.to_sql(
-        "indicators", sqlite_connection, if_exists="replace", dtype=indicators_schema
+    indicators_schema = Table(
+        "indicators",
+        MetaData(),
+        Column("code", String(50), primary_key=True),
+        Column("name", String(200), nullable=True),
     )
 
-    # import building permit data by years
-    for year in years:
-        df_yearly_permits = df_building_permits.copy()
-        other_years = years.copy()
-        other_years.remove(year)
-        df_yearly_permits.drop(other_years, axis=1, inplace=True)
-        df_yearly_permits.rename(columns={year: "value"}, inplace=True)
-        df_yearly_permits.dropna(inplace=True)
-        df_yearly_permits["year"] = year
-        if year == years[0]:
-            df_yearly_permits.to_sql(
-                "building_permits",
-                sqlite_connection,
-                if_exists="replace",
-                dtype=permits_schema,
-            )
-        else:
-            df_yearly_permits.to_sql(
-                "building_permits",
-                sqlite_connection,
-                if_exists="append",
-                dtype=permits_schema,
-            )
-
-    df_housing_prices.to_sql(
-        "housing_prices", sqlite_connection, if_exists="replace", dtype=housing_schema
+    (
+        builder.copy()
+        .whitelist_cols(["IND"])
+        .rename_cols({"IND": "code"})
+        .drop_duplicates()
+        .to_sqlite(indicators_schema, engine, False)
     )
-    sqlite_connection.close()
+
+    schema = Table(
+        "housing_prices",
+        MetaData(),
+        Column("id", Integer, primary_key=True),
+        Column("country_code", String(7), nullable=False),
+        Column("indicator_code", String(20), nullable=False),
+        Column("year_quarter", String(7), nullable=False),
+        Column("value", Numeric, nullable=False),
+    )
+
+    builder.whitelist_cols(list(column_mapping.keys())).rename_cols(
+        column_mapping
+    ).to_sqlite(schema, engine)
 
 
 def read_zip_dataset(url: str, file_name: str) -> pd.DataFrame:
