@@ -1,0 +1,89 @@
+// Exercise 3: Cars locations
+pipeline CarsPipeline {
+
+    // define pipes
+    CarsHttpExtractor
+        -> CarsTextFileInterpreter
+        -> CarsHeaderDeleter
+        -> CarsCSVInterpreter
+        -> CarsColumnDeleter
+        -> CarsColumnSelector
+        -> CarsTableInterpreter
+        -> CarsSQLiteLoader;
+
+    // define blocks used
+    block CarsHttpExtractor oftype HttpExtractor {
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46251-0021_00.csv";
+    }
+
+    block CarsTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "latin2";
+    }
+
+    block CarsHeaderDeleter oftype TextLineDeleter {
+        lines: [1, 2, 3, 4, 5, 6, 7];
+    }
+
+    block CarsCSVInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+ 
+    // would love to be able to select multiple columns to be deleted via the range A1:B*
+    block CarsColumnDeleter oftype ColumnDeleter {
+        delete: [column D, column E, column F, column G, column H, column I, column J, column K, column L, column N, column O, column P, column Q, column R, column S, column T, column U, column V, column X, column Y, column Z,
+        column AA, column AB, column AC, column AD, column AE, column AF, column AH, column AI, column AJ, column AK, column AL, column AM, column AN, column AO, column AP, column AR, column AS, column AT, column AU, column AV, column AW, column AX, column AY, column AZ,
+        column BB, column BC, column BD, column BE, column BF, column BG, column BH, column BI, column BJ, column BL, column BM, column BN, column BO, column BP, column BQ, column BR, column BS, column BT
+        ];
+    }
+
+    // ensures there are no more columns than required
+    block CarsColumnSelector oftype CellRangeSelector {
+        select: range A1:J*;
+    }
+
+    block CarsTableInterpreter oftype TableInterpreter {
+        header: false;
+        columns: [
+            // interpret sheet columns as table columns and assign data types
+            "date" oftype text,
+            "CIN" oftype CIN,
+            "name" oftype text,
+            "petrol" oftype PositiveInteger,
+            "diesel" oftype PositiveInteger,
+            "gas" oftype PositiveInteger,
+            "electro" oftype PositiveInteger,
+            "hybrid" oftype PositiveInteger,
+            "plugInHybrid" oftype PositiveInteger,
+            "others" oftype PositiveInteger,
+        ];
+    }
+
+    // dump data to SQLite database
+    block CarsSQLiteLoader oftype SQLiteLoader {
+        table: "cars";
+        file: "./cars.sqlite";
+    }
+}
+
+// define constraints for the table interpreter
+
+constraint PositiveIntegerConstraint on integer:
+    value > 0;
+
+constraint CinConstraint on text:
+    value matches /^\d{5}$/;
+
+// constraints end
+
+
+// define ValueTypes for the table interpreter
+
+valuetype PositiveInteger oftype integer {
+    constraints: [ PositiveIntegerConstraint ];
+}
+
+valuetype CIN oftype text {
+    constraints: [ CinConstraint ];
+}
+
+// ValueTypes end
