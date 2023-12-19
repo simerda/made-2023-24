@@ -3,15 +3,12 @@ from urllib.request import urlopen
 from zipfile import ZipFile
 from sqlalchemy import (
     create_engine,
-    Table,
-    Column,
     Integer,
     String,
     Numeric,
-    MetaData,
     Engine,
 )
-from data_manipulators import PipelineBuilder
+from data_manipulators import PipelineBuilder, SchemaBuilder
 
 import pandas as pd
 
@@ -67,29 +64,23 @@ def building_permits_pipeline(engine: Engine):
         .rename_cols(countries_mapping)
     )
 
-    indicators_schema = Table(
-        "indicators",
-        MetaData(),
-        Column("code", String(50), primary_key=True),
-        Column("name", String(200), nullable=True),
-    )
+    indicators_schema = (SchemaBuilder("indicators")
+                         .add_column("code", String(50), primary_key=True)
+                         .add_column("name", String(200), nullable=True)
+                         .build())
 
-    countries_schema = Table(
-        "countries",
-        MetaData(),
-        Column("code", String(7), primary_key=True),
-        Column("name", String(50), nullable=False),
-    )
+    countries_schema = (SchemaBuilder("countries")
+                        .add_column("code", String(7), primary_key=True)
+                        .add_column("name", String(50), nullable=False)
+                        .build())
 
-    permits_schema = Table(
-        "building_permits",
-        MetaData(),
-        Column("id", Integer, primary_key=True, autoincrement=True),
-        Column("country_code", String(7), nullable=False),
-        Column("indicator_code", String(50), nullable=False),
-        Column("year", Integer, nullable=False),
-        Column("value", Numeric, nullable=False),
-    )
+    permits_schema = (SchemaBuilder("building_permits")
+                      .add_column("id", Integer, primary_key=True, autoincrement=True)
+                      .add_column("country_code", String(7), nullable=False)
+                      .add_column("indicator_code", String(50), nullable=False)
+                      .add_column("year", Integer, nullable=False)
+                      .add_column("value", Numeric, nullable=False)
+                      .build())
 
     # import indicators
     indicators_builder.to_sqlite(indicators_schema, engine)
@@ -124,12 +115,10 @@ def housing_prices_pipeline(engine: Engine):
         "Value": "value",
     }
 
-    indicators_schema = Table(
-        "indicators",
-        MetaData(),
-        Column("code", String(50), primary_key=True),
-        Column("name", String(200), nullable=True),
-    )
+    indicators_schema = (SchemaBuilder("indicators")
+                         .add_column("code", String(50), primary_key=True)
+                         .add_column("name", String(200), nullable=True)
+                         .build())
 
     (
         builder.copy()
@@ -139,15 +128,13 @@ def housing_prices_pipeline(engine: Engine):
         .to_sqlite(indicators_schema, engine, False)
     )
 
-    schema = Table(
-        "housing_prices",
-        MetaData(),
-        Column("id", Integer, primary_key=True),
-        Column("country_code", String(7), nullable=False),
-        Column("indicator_code", String(20), nullable=False),
-        Column("year_quarter", String(7), nullable=False),
-        Column("value", Numeric, nullable=False),
-    )
+    schema = (SchemaBuilder("housing_prices")
+              .add_column("id", Integer, primary_key=True)
+              .add_column("country_code", String(7), nullable=False)
+              .add_column("indicator_code", String(20), nullable=False)
+              .add_column("year_quarter", String(7), nullable=False)
+              .add_column("value", Numeric, nullable=False)
+              .build())
 
     builder.whitelist_cols(list(column_mapping.keys())).rename_cols(
         column_mapping

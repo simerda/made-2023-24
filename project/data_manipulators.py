@@ -1,7 +1,7 @@
 from pandas import DataFrame
 from typing import Self
-from sqlalchemy import Table
-from sqlalchemy.engine import Engine
+
+from sqlalchemy import Table, Column, MetaData, Engine
 
 
 class PipelineBuilder:
@@ -82,3 +82,20 @@ class PipelineBuilder:
 
         self._data.to_sql(schema.name, engine, if_exists="append", index=False)
         return self
+
+
+class SchemaBuilder:
+    def __init__(self, table_name: str) -> None:
+        super().__init__()
+        self._table_name = table_name
+        self._columns = []
+
+        if table_name is None or len(table_name) <= 0:
+            raise ValueError("Table name cannot be empty.")
+
+    def add_column(self, name: str, data_type, primary_key: bool = False, autoincrement: bool = False, nullable: bool = True) -> Self:
+        self._columns.append(Column(name, data_type, primary_key=primary_key, autoincrement=autoincrement, nullable=nullable))
+        return self
+
+    def build(self) -> Table:
+        return Table(self._table_name, MetaData(), *self._columns)
