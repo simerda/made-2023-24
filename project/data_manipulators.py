@@ -5,9 +5,6 @@ from sqlalchemy.engine import Engine
 
 
 class PipelineBuilder:
-    _data = None
-    _immutable = True
-
     def __init__(self, data: DataFrame):
         super().__init__()
         self._data = data
