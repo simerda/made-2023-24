@@ -98,10 +98,26 @@ def main():
         housing_prices_count = get_row_count("housing_prices", conn)
 
     # assert each table contains expected amount of rows
-    assert building_permits_count == COUNT_BUILDING_PERMITS, "{} rows found in the `building_permits` table but {} was expected.".format(building_permits_count, COUNT_BUILDING_PERMITS)
-    assert countries_count == COUNT_COUNTRIES, "{} rows found in the `countries` table but {} was expected.".format(countries_count, COUNT_COUNTRIES)
-    assert indicators_count == COUNT_INDICATORS, "{} rows found in the `indicators` table but {} was expected.".format(indicators_count, COUNT_INDICATORS)
-    assert housing_prices_count == COUNT_HOUSING_PRICES, "{} rows found in the `housing_prices` table but {} was expected.".format(housing_prices_count, COUNT_HOUSING_PRICES)
+    assert (
+        building_permits_count == COUNT_BUILDING_PERMITS
+    ), "{} rows found in the `building_permits` table but {} was expected.".format(
+        building_permits_count, COUNT_BUILDING_PERMITS
+    )
+    assert (
+        countries_count == COUNT_COUNTRIES
+    ), "{} rows found in the `countries` table but {} was expected.".format(
+        countries_count, COUNT_COUNTRIES
+    )
+    assert (
+        indicators_count == COUNT_INDICATORS
+    ), "{} rows found in the `indicators` table but {} was expected.".format(
+        indicators_count, COUNT_INDICATORS
+    )
+    assert (
+        housing_prices_count == COUNT_HOUSING_PRICES
+    ), "{} rows found in the `housing_prices` table but {} was expected.".format(
+        housing_prices_count, COUNT_HOUSING_PRICES
+    )
 
 
 def get_row_count(table_name: str, connection: Connection) -> int:

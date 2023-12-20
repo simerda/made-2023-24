@@ -98,8 +98,23 @@ class SchemaBuilder:
         if table_name is None or len(table_name) <= 0:
             raise ValueError("Table name cannot be empty.")
 
-    def add_column(self, name: str, data_type, primary_key: bool = False, autoincrement: bool = False, nullable: bool = True) -> Self:
-        self._columns.append(Column(name, data_type, primary_key=primary_key, autoincrement=autoincrement, nullable=nullable))
+    def add_column(
+        self,
+        name: str,
+        data_type,
+        primary_key: bool = False,
+        autoincrement: bool = False,
+        nullable: bool = True,
+    ) -> Self:
+        self._columns.append(
+            Column(
+                name,
+                data_type,
+                primary_key=primary_key,
+                autoincrement=autoincrement,
+                nullable=nullable,
+            )
+        )
         return self
 
     def build(self) -> Table:

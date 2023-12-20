@@ -64,23 +64,29 @@ def building_permits_pipeline(engine: Engine):
         .rename_cols(countries_mapping)
     )
 
-    indicators_schema = (SchemaBuilder("indicators")
-                         .add_column("code", String(50), primary_key=True)
-                         .add_column("name", String(200), nullable=True)
-                         .build())
+    indicators_schema = (
+        SchemaBuilder("indicators")
+        .add_column("code", String(50), primary_key=True)
+        .add_column("name", String(200), nullable=True)
+        .build()
+    )
 
-    countries_schema = (SchemaBuilder("countries")
-                        .add_column("code", String(7), primary_key=True)
-                        .add_column("name", String(50), nullable=False)
-                        .build())
+    countries_schema = (
+        SchemaBuilder("countries")
+        .add_column("code", String(7), primary_key=True)
+        .add_column("name", String(50), nullable=False)
+        .build()
+    )
 
-    permits_schema = (SchemaBuilder("building_permits")
-                      .add_column("id", Integer, primary_key=True, autoincrement=True)
-                      .add_column("country_code", String(7), nullable=False)
-                      .add_column("indicator_code", String(50), nullable=False)
-                      .add_column("year", Integer, nullable=False)
-                      .add_column("value", Numeric, nullable=False)
-                      .build())
+    permits_schema = (
+        SchemaBuilder("building_permits")
+        .add_column("id", Integer, primary_key=True, autoincrement=True)
+        .add_column("country_code", String(7), nullable=False)
+        .add_column("indicator_code", String(50), nullable=False)
+        .add_column("year", Integer, nullable=False)
+        .add_column("value", Numeric, nullable=False)
+        .build()
+    )
 
     # import indicators
     indicators_builder.to_sqlite(indicators_schema, engine)
@@ -115,10 +121,12 @@ def housing_prices_pipeline(engine: Engine):
         "Value": "value",
     }
 
-    indicators_schema = (SchemaBuilder("indicators")
-                         .add_column("code", String(50), primary_key=True)
-                         .add_column("name", String(200), nullable=False)
-                         .build())
+    indicators_schema = (
+        SchemaBuilder("indicators")
+        .add_column("code", String(50), primary_key=True)
+        .add_column("name", String(200), nullable=False)
+        .build()
+    )
 
     indicator_names = {
         "HPI_RPI": "Price to rent ratio",
@@ -134,17 +142,21 @@ def housing_prices_pipeline(engine: Engine):
         .whitelist_cols(["IND"])
         .rename_cols({"IND": "code"})
         .drop_duplicates()
-        .apply_lambda(lambda r: {"code": r["code"], "name": indicator_names.get(r["code"], None)})
+        .apply_lambda(
+            lambda r: {"code": r["code"], "name": indicator_names.get(r["code"], None)}
+        )
         .to_sqlite(indicators_schema, engine, False)
     )
 
-    schema = (SchemaBuilder("housing_prices")
-              .add_column("id", Integer, primary_key=True)
-              .add_column("country_code", String(7), nullable=False)
-              .add_column("indicator_code", String(20), nullable=False)
-              .add_column("year_quarter", String(7), nullable=False)
-              .add_column("value", Numeric, nullable=False)
-              .build())
+    schema = (
+        SchemaBuilder("housing_prices")
+        .add_column("id", Integer, primary_key=True)
+        .add_column("country_code", String(7), nullable=False)
+        .add_column("indicator_code", String(20), nullable=False)
+        .add_column("year_quarter", String(7), nullable=False)
+        .add_column("value", Numeric, nullable=False)
+        .build()
+    )
 
     builder.whitelist_cols(list(column_mapping.keys())).rename_cols(
         column_mapping
