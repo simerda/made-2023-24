@@ -117,14 +117,24 @@ def housing_prices_pipeline(engine: Engine):
 
     indicators_schema = (SchemaBuilder("indicators")
                          .add_column("code", String(50), primary_key=True)
-                         .add_column("name", String(200), nullable=True)
+                         .add_column("name", String(200), nullable=False)
                          .build())
 
+    indicator_names = {
+        "HPI_RPI": "Price to rent ratio",
+        "HPI_YDH_AVG": "Standardised price - rent ratio",
+        "RHP": "Real house price index",
+        "HPI_YDH": "Price to income ratio",
+        "RPI": "Rent prices",
+        "HPI": "Nominal house price index",
+        "HPI_RPI_AVG": "Standardised price - income ratio",
+    }
     (
         builder.copy()
         .whitelist_cols(["IND"])
         .rename_cols({"IND": "code"})
         .drop_duplicates()
+        .apply_lambda(lambda r: {"code": r["code"], "name": indicator_names.get(r["code"], None)})
         .to_sqlite(indicators_schema, engine, False)
     )
 

@@ -1,5 +1,6 @@
+import pandas as pd
 from pandas import DataFrame
-from typing import Self
+from typing import Self, Callable
 
 from sqlalchemy import Table, Column, MetaData, Engine
 
@@ -59,6 +60,10 @@ class PipelineBuilder:
 
     def drop_duplicates(self) -> Self:
         self._data.drop_duplicates(inplace=True)
+        return self
+
+    def apply_lambda(self, func: Callable[[pd.Series], dict]) -> Self:
+        self._data = self._data.apply(func, axis=1, result_type="expand")
         return self
 
     def copy(self) -> Self:
