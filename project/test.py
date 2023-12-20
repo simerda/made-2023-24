@@ -74,11 +74,11 @@ def main():
         [c["name"] for c in inspector.get_columns("housing_prices")]
     )
     expected_housing_prices_cols = {
-        "id",
-        "country_code",
-        "indicator_code",
-        "year_quarter",
-        "value",
+                "id",
+                "country_code",
+                "indicator_code",
+                "year_quarter",
+                "value",
     }
     missing_housing_prices_cols = (
         expected_housing_prices_cols - present_housing_prices_cols
