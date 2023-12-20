@@ -1,0 +1,50 @@
+name: Test
+
+# Run tests check on pull request or push to main
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  test:
+    name: Test data pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Setup environment
+        run: ./project/setup.sh
+
+      - name: Run pipeline
+        run: ./project/pipeline.sh
+
+      - name: Test pipeline
+        run: ./project/test.sh
+
+  lint:
+    name: Check code formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Setup environment
+        run: ./project/setup.sh
+
+      - name: Run linter Black
+        run: black . --check --diff
