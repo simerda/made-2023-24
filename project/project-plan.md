@@ -1,7 +1,7 @@
 # Project Plan
 
 ## Title
-Housing prices in relation to ease of obtaining a construction permit
+Relation between Housing prices and the ease of obtaining a construction permit
 
 ## Main Question
 
