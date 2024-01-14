@@ -23,19 +23,25 @@ can do in order to make ownership of a property for living more affordable.
 * Metadata URL: https://datacatalog.worldbank.org/search/dataset/0038564/Doing-Business
 * Data URL: https://databank.worldbank.org/data/download/DB_CSV.zip
 * Data Type: CSV
+* License: Creative Commons Attribution 4.0
 
 The Doing Business project provides objective measures of business regulations and their enforcement across 190
 economies. Economies are ranked on their ease of doing business, from 1–190. The rankings are determined by sorting
 the aggregate scores (formerly called distance to frontier) on 10 topics, each consisting of several indicators,
 giving equal weight to each topic.
 
+World Bank (2023), "Doing Business", [https://doi.org/10.1787/cbcc2905-en](https://doi.org/10.1787/cbcc2905-en) (accessed on 8 November 2023). License: CC-BY 4.0
+
 ### Datasource2: OECD.Stat - Analytical house price indicators
 * Metadata URL: https://www.oecd-ilibrary.org/economics/data/prices/analytical-house-price-indicators_cbcc2905-en
 * Data URL: https://stats.oecd.org/viewhtml.aspx?datasetcode=HOUSE_PRICES&lang=en
 * Data Type: CSV
+* License: Custom permissive *(You can extract from, download, copy, adapt, print, distribute, share and embed Data for any purpose, even for commercial use.)*
 
 The dataset contains, in addition to nominal Residential Property Prices Indices (RPPIs), information on real house
 prices, rental prices and the ratios of nominal prices to rents and to disposable household income per capita.
+
+OECD (2023), "Prices: Analytical house price indicators", Main Economic Indicators (database), [https://doi.org/10.1787/cbcc2905-en](https://doi.org/10.1787/cbcc2905-en) (accessed on 8 November 2023).
 
 ## Work Packages
 

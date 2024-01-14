@@ -1,42 +1,62 @@
-# Methods of Advanced Data Engineering Template Project
+# Relation Between Housing Prices and the Ease of Obtaining a Construction Permit
 
-This template project provides some structure for your open data project in the MADE module at FAU.
-This repository contains (a) a data science project that is developed by the student over the course of the semester, and (b) the exercises that are submitted over the course of the semester.
-Before you begin, make sure you have [Python](https://www.python.org/) and [Jayvee](https://github.com/jvalue/jayvee) installed. We will work with [Jupyter notebooks](https://jupyter.org/). The easiest way to do so is to set up [VSCode](https://code.visualstudio.com/) with the [Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter).
+This repository serves as an output for the course [MADE](https://oss.cs.fau.de/teaching/specific/made/) (Methods of Advanced Data Engineering) by the [Professorship for Open-Source Software](https://oss.cs.fau.de/) of [FAU](https://www.fau.eu/).
 
+## Description
 
-## Project Work
-Your data engineering project will run alongside lectures during the semester. We will ask you to regularly submit project work as milestones so you can reasonably pace your work. All project work submissions **must** be placed in the `project` folder.
+This project *Relation Between Housing Prices and the Ease of Obtaining a Construction Permit*, which explores datasets Doing Business from the World Bank and Analytical house price indicators from the statistical department of the OECD.
 
-### Exporting a Jupyter Notebook
-Jupyter Notebooks can be exported using `nbconvert` (`pip install nbconvert`). For example, to export the example notebook to html: `jupyter nbconvert --to html examples/final-report-example.ipynb --embed-images --output final-report.html`
+The project analyses relation between the Doing Business indicators and the Analytical house price indicators
+Specifically the projects focuses on the possible correlation between the indicator Dealing with construction permits - Score of the Doing Business dataset and the indicator Nominal house price index of the Analytical house price indicators.
 
+---
 
-## Exercises
-During the semester you will need to complete exercises, sometimes using [Python](https://www.python.org/), sometimes using [Jayvee](https://github.com/jvalue/jayvee). You **must** place your submission in the `exercises` folder in your repository and name them according to their number from one to five: `exercise<number from 1-5>.<jv or py>`.
+## Dependencies
 
-In regular intervalls, exercises will be given as homework to complete during the semester. We will divide you into two groups, one completing an exercise in Jayvee, the other in Python, switching each exercise. Details and deadlines will be discussed in the lecture, also see the [course schedule](https://made.uni1.de/). At the end of the semester, you will therefore have the following files in your repository:
+1) Python 3.11+
+2) Libraries defined in `project/requirements.txt`
 
-1. `./exercises/exercise1.jv` or `./exercises/exercise1.py`
-2. `./exercises/exercise2.jv` or `./exercises/exercise2.py`
-3. `./exercises/exercise3.jv` or `./exercises/exercise3.py`
-4. `./exercises/exercise4.jv` or `./exercises/exercise4.py`
-5. `./exercises/exercise5.jv` or `./exercises/exercise5.py`
+---
 
-### Exercise Feedback
-We provide automated exercise feedback using a GitHub action (that is defined in `.github/workflows/exercise-feedback.yml`). 
+## Goals
 
-To view your exercise feedback, navigate to Actions -> Exercise Feedback in your repository.
+The primary purpose of the project is to build automated Data Engineering pipeline using Python.
+It can be run by executing the shell file `project/pipeline.sh` after installing dependencies from `project/requirements.txt`.
 
-The exercise feedback is executed whenever you make a change in files in the `exercise` folder and push your local changes to the repository on GitHub. To see the feedback, open the latest GitHub Action run, open the `exercise-feedback` job and `Exercise Feedback` step. You should see command line output that contains output like this:
+The secondary purpose is to answer the project question: *Relation Between Housing Prices and the Ease of Obtaining a Construction Permit*.
+The analysis is available in the final report accessible at [`project/report.ipynb`](project/report.ipynb).
 
-```sh
-Found exercises/exercise1.jv, executing model...
-Found output file airports.sqlite, grading...
-Grading Exercise 1
-	Overall points 17 of 17
-	---
-	By category:
-		Shape: 4 of 4
-		Types: 13 of 13
-```
+### Data sources
+
+#### Datasource1: The World Bank - Doing Business
+* Metadata URL: https://datacatalog.worldbank.org/search/dataset/0038564/Doing-Business
+* Data URL: https://databank.worldbank.org/data/download/DB_CSV.zip
+* Data Type: CSV
+* License: Creative Commons Attribution 4.0
+
+The Doing Business project provides objective measures of business regulations and their enforcement across 190
+economies. Economies are ranked on their ease of doing business, from 1–190. The rankings are determined by sorting
+the aggregate scores (formerly called distance to frontier) on 10 topics, each consisting of several indicators,
+giving equal weight to each topic.
+
+World Bank (2023), "Doing Business", [https://datacatalog.worldbank.org/search/dataset/0038564/Doing-Business](https://datacatalog.worldbank.org/search/dataset/0038564/Doing-Business) (accessed on 8 November 2023). License: CC-BY 4.0
+
+#### Datasource2: OECD.Stat - Analytical house price indicators
+* Metadata URL: https://www.oecd-ilibrary.org/economics/data/prices/analytical-house-price-indicators_cbcc2905-en
+* Data URL: https://stats.oecd.org/viewhtml.aspx?datasetcode=HOUSE_PRICES&lang=en
+* Data Type: CSV
+* License: Custom permissive *(You can extract from, download, copy, adapt, print, distribute, share and embed Data for any purpose, even for commercial use.)*
+
+The dataset contains, in addition to nominal Residential Property Prices Indices (RPPIs), information on real house
+prices, rental prices and the ratios of nominal prices to rents and to disposable household income per capita.
+
+OECD (2023), "Prices: Analytical house price indicators", Main Economic Indicators (database), [https://doi.org/10.1787/cbcc2905-en](https://doi.org/10.1787/cbcc2905-en) (accessed on 8 November 2023).
+
+---
+
+## License
+
+This project is licensed under the [CC BY 4.0](LICENSE). See the [LICENSE](LICENSE) file for details.
+
+---
+
