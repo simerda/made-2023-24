@@ -1,0 +1,70 @@
+// Exercise 5: Gtfs stops dataset
+pipeline GtfsPipeline {
+
+    // define pipes
+    GtfsGTSFExtractor
+        -> GtfsFilePicker
+        -> GtfsTextFileInterpreter
+        -> GtfsCSVInterpreter
+        -> GtfsTableInterpreter
+        -> GtfsSQLiteLoader;
+
+    // define blocks used
+    block GtfsGTSFExtractor oftype GTFSExtractor {
+        url: "https://gtfs.rhoenenergie-bus.de/GTFS.zip";
+    }
+
+     block GtfsFilePicker oftype FilePicker {   
+        path: "/stops.txt";
+    }
+
+    block GtfsTextFileInterpreter oftype TextFileInterpreter {
+    }
+
+    block GtfsCSVInterpreter oftype CSVInterpreter {
+        enclosing: '"';
+    }
+
+    block GtfsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            // interpret sheet columns as table columns and assign data types
+            "stop_id" oftype integer,
+            "stop_name" oftype text,
+            "stop_lat" oftype LatLon,
+            "stop_lon" oftype LatLon,
+            "zone_id" oftype Integer2001,
+        ];
+    }
+
+    // dump data to SQLite database
+    block GtfsSQLiteLoader oftype SQLiteLoader {
+        table: "stops";
+        file: "./gtfs.sqlite";
+    }
+}
+
+// define constraints for the table interpreter
+
+constraint LatLonConstraint oftype RangeConstraint {
+   lowerBound: -90;
+   upperBound: 90;
+}
+
+constraint Constraint2001 on integer:
+    value == 2001;
+
+// constraints end
+
+
+// define ValueTypes for the table interpreter
+
+valuetype LatLon oftype decimal {
+    constraints: [ LatLonConstraint ];
+}
+
+valuetype Integer2001 oftype integer {
+    constraints: [ Constraint2001 ];
+}
+
+// ValueTypes end
